@@ -1,5 +1,7 @@
 import QtQuick
 import QsDisp27
+import "content/gauges"
+
 
 Window {
     width: mainScreen.width
@@ -10,6 +12,10 @@ Window {
 
     Screen01 {
         id: mainScreen
+    }
+    
+    FuelGauge {
+        id: fuelGauges
     }
 
 }

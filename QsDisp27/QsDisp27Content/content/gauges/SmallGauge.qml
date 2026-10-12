@@ -1,18 +1,47 @@
 import QtQuick
-import QtQuick.Controls
+//import QtQuick.Controls             //possibly unneeded
 import QtQuick.Shapes
 import QtQuick.Timeline 1.0
+import Qt5Compat.GraphicalEffects
 
 Item {
     id: main
     width: 300
     height: 300
+
+    /*########## COMMON PROPERTIES ##########*/
+    //things that get changed often
+
+    //basic gauge setup
+    property int minVal: 0
+    property int maxVal: 1000
     
     //global arc properties
     property int arcStart: -120 //start position
-    property int arcEnd: 120    //end position
-    property int lowZone: -90   //low zone, same as arcStart to hide
-    property int highZone: 100   //high zone, same as arcEnd to hide
+    property int arcEnd: 120    //end position 
+
+    property int lowZone: 100   //low zone, same as minVal to hide
+    property int highZone: 900   //high zone, same as maxVal to hide
+
+    //label & icon properties
+    property string unitLabel: "%"
+    property real unitScalar: 0.1
+    property string symbolPath: "../../images/fuelLevel.png"
+
+    //colors
+    property string bgroundColor: "#000000"     //color for all background objects (usually black)
+    property string highlightColor: "#F1EB9C"   //background for highlights on gauge (grey)
+    property string lowColor: "#D22630"         //color for low area
+    property string highColor: "#D22630"        //color for high area
+
+
+    /*########## UNCOMMON PROPERTIES ##########*/
+    //things that do not get changed often
+
+    //calc'd angles for zones, do NOT set in parent
+    //formula: setValue * (arc range) / (gauge range) - offset
+    property int _calcLowZone: (lowZone * (arcEnd + (arcStart * -1)) / (maxVal - minVal)) - 120
+    property int _calcHighZone: (highZone * (arcEnd + (arcStart * -1)) / (maxVal - minVal)) - 120
 
     //outside arc properties
     property int outsideSizeDiff: -10
@@ -24,6 +53,8 @@ Item {
 
     //bar arc properties
     property int barSizeDiff: -15
+
+
     
     ArcItem {
         id: outsideArc
@@ -35,10 +66,10 @@ Item {
         
         strokeWidth: outsideWidth
         
-        begin: lowZone
-        end: highZone
+        begin: _calcLowZone
+        end: _calcHighZone
         
-        strokeColor: "#000000"
+        strokeColor: bgroundColor
         fillColor: "#00ffffff"
         
         ArcItem {
@@ -46,13 +77,14 @@ Item {
             
             width: parent.width
             height: parent.height
+            fillColor: "#00ffffff"
             
             strokeWidth: parent.strokeWidth
             
             begin: arcStart
-            end: lowZone
+            end: _calcLowZone
 
-            strokeColor: "#D22630"
+            strokeColor: lowColor
         }
         
         ArcItem {
@@ -60,13 +92,14 @@ Item {
             
             width: parent.width
             height: parent.height
+            fillColor: "#00ffffff"
 
             strokeWidth: parent.strokeWidth
             
-            begin: highZone
+            begin: _calcHighZone
             end: arcEnd
 
-            strokeColor: "#D22630"
+            strokeColor: highColor
         }
     }
     
@@ -83,7 +116,7 @@ Item {
         begin: arcStart
         end: arcEnd
         
-        strokeColor: "#000000"
+        strokeColor: bgroundColor
         fillColor: "#00ffffff"
 
         ArcItem {
@@ -99,7 +132,7 @@ Item {
             begin: arcStart
             end: -120
 
-            strokeColor: "#F1EB9C"
+            strokeColor: highlightColor //D22630
             fillColor: "#00ffffff"
         }
     }
@@ -127,9 +160,10 @@ Item {
             y: 0
 
             ShapePath {
+                id: triangleShapePath
                 fillColor: "#F1EB9C"
                 strokeWidth: 3
-                strokeColor: "#000000"
+                strokeColor: bgroundColor
                 startX: triangle.width / 2
                 startY: 0
                 PathLine { x: triangle.width; y: triangle.height }
@@ -139,38 +173,71 @@ Item {
         }
     }
 
-    //FIX THIS IT IS NOT GOOD!!!!!
-    //VERY SLOPPY AND UNORGANIZED!@!!!!!!!!!!!
     Text {
         id: readout
+        color: bgroundColor
+
         anchors.horizontalCenter: parent.horizontalCenter
+        anchors.verticalCenterOffset: -8
         anchors.verticalCenter: parent.verticalCenter
 
-        text: timeline.currentFrame
+        text: Math.round(timeline.currentFrame * unitScalar)
+
         font.pixelSize: 75
         horizontalAlignment: Text.AlignHCenter
+        font.bold: true
         font.family: "Share Tech Mono"
 
-        font.letterSpacing: 0
+        Text {
+            id: iconLabel
+            color: bgroundColor
 
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.verticalCenterOffset: 50
+            anchors.verticalCenter: parent.verticalCenter
+
+            text: main.unitLabel
+
+            font.pixelSize: 45
+            horizontalAlignment: Text.AlignHCenter
+            anchors.horizontalCenterOffset: 0
+            font.bold: false
+            font.family: "Share Tech Mono"
+        }
     }
 
+    Image {
+        id: logoIcon
+        y: 160
+        anchors.horizontalCenter: parent.horizontalCenter
 
+        scale: 0.4
+
+        source: main.symbolPath
+        anchors.horizontalCenterOffset: 0
+
+        ColorOverlay {
+            anchors.fill: logoIcon
+            source: logoIcon
+            color: bgroundColor
+        }
+    }
 
     Timeline {
         id: timeline
+        endFrame: maxVal
+        currentFrame: 0
         animations: [
-            TimelineAnimation {
+            /*TimelineAnimation {
                 id: timelineAnimation
                 running: true
                 loops: 1
                 duration: 1000
                 to: 1000
                 from: 0
-            }
+            }*/
         ]
-        startFrame: 0
-        endFrame: 1000
+        startFrame: minVal
         enabled: true
 
         KeyframeGroup {
@@ -178,12 +245,12 @@ Item {
             property: "rotation"
             Keyframe {
                 value: 120
-                frame: 1000
+                frame: maxVal
             }
 
             Keyframe {
                 value: -120
-                frame: 0
+                frame: minVal
             }
         }
 
@@ -192,42 +259,71 @@ Item {
             property: "end"
             Keyframe {
                 value: 120
-                frame: 1000
+                frame: maxVal
             }
 
             Keyframe {
                 value: -120
+                frame: minVal
+            }
+        }
+
+        KeyframeGroup {
+            target: barArc
+            property: "strokeColor"
+            Keyframe {
+                value: lowColor
                 frame: 0
+            }
+
+            Keyframe {
+                value: lowColor
+                frame: lowZone - 1
+            }
+
+            Keyframe {
+                value: highlightColor
+                frame: lowZone
+            }
+
+            Keyframe {
+                value: highlightColor
+                frame: highZone
+            }
+
+            Keyframe {
+                value: highColor
+                frame: highZone + 1
+            }
+        }
+
+        KeyframeGroup {
+            target: triangleShapePath
+            property: "fillColor"
+            Keyframe {
+                value: lowColor
+                frame: 0
+            }
+
+            Keyframe {
+                value: lowColor
+                frame: lowZone - 1
+            }
+
+            Keyframe {
+                value: highlightColor
+                frame: lowZone
+            }
+
+            Keyframe {
+                value: highlightColor
+                frame: highZone
+            }
+
+            Keyframe {
+                value: highColor
+                frame: highZone + 1
             }
         }
     }
-
-
-
-    /*Image {
-        id: triangleOutline
-        width: 30
-        height: 35
-        source: "../../images/triangleOutline.svg"
-
-        sourceSize: Qt.size(width, height)
-
-        ColorOverlay {
-            anchors.fill: fill
-            source: fill
-
-        }
-
-        Image {
-            id: triangleFill
-            width: parent.width
-            height: parent.height
-            source: "../../images/triangleFill.svg"
-
-            sourceSize: Qt.size(width, height)
-        }
-
-    }*/
-
-
 }
