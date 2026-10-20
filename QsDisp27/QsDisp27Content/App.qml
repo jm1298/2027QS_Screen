@@ -16,6 +16,15 @@ Window {
     
     FuelGauge {
         id: fuelGauges
+        x: 284
+        y: 380
+    }
+
+    SmallGauge {
+        id: smallgauge
+        x: 88
+        y: 55
+        unitLabel: "abc"
     }
 
 }
