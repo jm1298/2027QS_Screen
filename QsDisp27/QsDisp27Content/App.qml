@@ -1,30 +1,38 @@
 import QtQuick
 import QsDisp27
 import "content/gauges"
-
+import "content/layout"
 
 Window {
-    width: mainScreen.width
-    height: mainScreen.height
+    width: 1920
+    height: 1080
 
     visible: true
     title: "QsDisp27"
 
-    Screen01 {
-        id: mainScreen
+    // Screen01 {
+    //     id: mainScreen
+    // }
+
+    TopBar {
+        id: topBar
+        x: 0
+        y: 0
     }
-    
-    FuelGauge {
-        id: fuelGauges
-        x: 284
-        y: 380
+
+    SideBarRight {
+        id: sideBarRight
+        anchors.right: parent.right
+        anchors.top: topBar.bottom
+        anchors.topMargin: -10
     }
 
     SmallGauge {
         id: smallgauge
-        x: 88
-        y: 55
-        unitLabel: "abc"
+        x: 116
+        y: 200
+        unitLabel: "%"
+
     }
 
 }

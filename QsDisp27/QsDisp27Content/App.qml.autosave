@@ -1,0 +1,35 @@
+import QtQuick
+import QsDisp27
+import "content/gauges"
+import "content/layout"
+
+Window {
+    width: 1920
+    height: 1080
+
+    visible: true
+    title: "QsDisp27"
+
+    TopBar {
+        id: topBar
+        x: 0
+        y: 0
+    }
+
+    SideBarRight {
+        id: sideBarRight
+        anchors.right: parent.right
+        anchors.top: topBar.bottom
+        anchors.topMargin: -10
+    }
+
+    SmallGauge {
+        id: smallgauge
+        x: 116
+        y: 200
+        unitLabel: "%"
+
+    }
+
+}
+

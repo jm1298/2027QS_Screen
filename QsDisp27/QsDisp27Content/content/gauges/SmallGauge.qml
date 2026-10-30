@@ -1,8 +1,8 @@
 import QtQuick
-//import QtQuick.Controls             //possibly unneeded
 import QtQuick.Shapes
 import QtQuick.Timeline 1.0
 import Qt5Compat.GraphicalEffects
+import QsDisp27
 
 Item {
     id: main
@@ -25,14 +25,15 @@ Item {
 
     //label & icon properties
     property string unitLabel: "%"
+    property int labelSize: 45
     property real unitScalar: 0.1
     property string symbolPath: "../../images/fuelLevel.png"
 
     //colors
-    property string bgroundColor: "#000000"     //color for all background objects (usually black)
-    property string highlightColor: "#F1EB9C"   //background for highlights on gauge (grey)
-    property string lowColor: "#D22630"         //color for low area
-    property string highColor: "#D22630"        //color for high area
+    property color backgroundColor: Theme.backgroundColor//"#000000"     //color for all background objects (usually black)
+    property color highlightColor: Theme.highlightColor//"#FFFFFF"   //background for highlights on gauge (grey)
+    property color lowColor: Theme.lowColor //"#007FFF"         //color for low area
+    property color highColor: Theme.highColor //"#D22630"        //color for high area
 
 
     /*########## UNCOMMON PROPERTIES ##########*/
@@ -53,8 +54,6 @@ Item {
 
     //bar arc properties
     property int barSizeDiff: -15
-
-
     
     ArcItem {
         id: outsideArc
@@ -69,7 +68,7 @@ Item {
         begin: _calcLowZone
         end: _calcHighZone
         
-        strokeColor: bgroundColor
+        strokeColor: backgroundColor
         fillColor: "#00ffffff"
         
         ArcItem {
@@ -116,7 +115,7 @@ Item {
         begin: arcStart
         end: arcEnd
         
-        strokeColor: bgroundColor
+        strokeColor: backgroundColor
         fillColor: "#00ffffff"
 
         ArcItem {
@@ -156,14 +155,14 @@ Item {
             width: 20
             height: 40
 
-            anchors. horizontalCenter: parent.horizontalCenter
+            anchors.horizontalCenter: parent.horizontalCenter
             y: 0
 
             ShapePath {
                 id: triangleShapePath
                 fillColor: "#F1EB9C"
                 strokeWidth: 3
-                strokeColor: bgroundColor
+                strokeColor: backgroundColor
                 startX: triangle.width / 2
                 startY: 0
                 PathLine { x: triangle.width; y: triangle.height }
@@ -175,7 +174,7 @@ Item {
 
     Text {
         id: readout
-        color: bgroundColor
+        color: backgroundColor
 
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.verticalCenterOffset: -8
@@ -190,7 +189,7 @@ Item {
 
         Text {
             id: iconLabel
-            color: bgroundColor
+            color: backgroundColor
 
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenterOffset: 50
@@ -198,7 +197,7 @@ Item {
 
             text: main.unitLabel
 
-            font.pixelSize: 45
+            font.pixelSize: labelSize
             horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenterOffset: 0
             font.bold: false
@@ -219,13 +218,13 @@ Item {
         ColorOverlay {
             anchors.fill: logoIcon
             source: logoIcon
-            color: bgroundColor
+            color: backgroundColor
         }
     }
 
     Timeline {
         id: timeline
-        endFrame: maxVal
+        endFrame: 1000
         currentFrame: 0
         animations: [
             /*TimelineAnimation {
@@ -237,7 +236,7 @@ Item {
                 from: 0
             }*/
         ]
-        startFrame: minVal
+        startFrame: 0
         enabled: true
 
         KeyframeGroup {
